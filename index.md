@@ -2,31 +2,6 @@
 
 以下で使うプログラムは圧縮ファイルとしてsmith上の`/home/kota/Embedding/compressed_file`に置いてあります。使用される場合は必要なものをこのディレクトリからコピーするようにしてください。
 
-## 実行プログラム
-
-`EmApw.tgz`を任意のディレクトリにコピーします。次にファイルを解凍をします。
-
-```
-tar -xvzf EmApw.tgz
-```
-解凍できたら
-
-```
-cd EmApw
-```
-
-でディレクトリに入ります。smith上であればコンパイラloadしてください(最新のものは対応できていなかったりすることがあるので避けましょう)。
-```
-module load intel/2020.2.254
-module load intelmpi/2020.2.254
-```
-ohtakaではコンパイラを自動的にloadするので必要はありません。準備が整えば
-```
-make
-```
-
-カレントディレクトリ内に`emapw.out`が作成されていたら成功です。
-
 
 ## Cu(100)のSCF計算
 
@@ -69,29 +44,60 @@ rm -f hostfile.$JOB_ID
 
 です。ただし`emapw.out`のパスはご自身のものを指定してください。またコンパイラもご自身の環境により適宜変更してください。
 
-### smithでの計算
+### scf_embpot
+#### ksup1
+input.dat.ksup1
 
 ```
-#$ -S /bin/bash
-#$ -cwd
-#$ -q xh2.q
-#$ -pe x24 24
-#$ -N Cu001_7x7 
-#$ -j y
-
-module load intel/2020.2.254
-module load intelmpi/2020.2.254
-#Above settings should be consistent with those used in the comparison.
-
-#disable OPENMP parallelism
-export OMP_NUM_THREADS=1
-export I_MPI_ADJUST_ALLGATHERV=2
-export I_MPI_PIN=1
-cat $PE_HOSRFILE | awk '{ print$1":"$2/ENVIRON["OMP_NUM_THREADS"]}' >hostfile.$JOB_ID
-mpirun -n 64  /home/kota/Embedding/EmApw/emapw.out
-rm -f hostfile.$JOB_ID
+   0.d0      33.813626d0
+  90.d0      33.813626d0
+ 1         0.d0
+ 14.1d0    3.5d0
 ```
-ohtakaと同様にシンボリックリンクなどはご自身の環境に応じて変更を加えてください。
+始めの二行はセルサイズを指定している
+param.dat.ksup1
+```
+! // parameter file
+! // Cu_001_7x7 ksup1
+& param
+
+kopr=1
+kdsp=0
+kvx=0
+kvy=0
+ksup=1
+kinput_e=1
+klt_rad=1
+/
+```
+
+input.dat.ksup2
+```
+  0.d0       4.830518d0
+  90.d0       4.830518d0
+ 2.415259d0    2.415259d0    3.415692d0 
+ 1         0.d0
+ 1        90.d0
+ 1       -90.d0
+ 1       180.d0
+ 2         0.d0
+ 2        45.d0
+ 2        90.d0
+ 2       135.d0
+ 14.1d0    3.5d0    3.5d0
+ 1
+ 0.d0    0.d0   2.4d0   2.4d0    ! atomic coordinates
+ 29.d0   7
+ 100   200   210   300   310   325    405
+ 2.d0  2.d0  6.d0  2.d0  6.d0  10.d0  1.d0
+ 60.d0    32.d0
+ 3.415692d0     3.415692d0      0.d0
+-3.415692d0     3.415692d0      0.d0
+ 2
+ -0.5d0    0.32500628d0   31
+```
+
+param.dat.ksup2
 
 
 ### 計算状況の確認
